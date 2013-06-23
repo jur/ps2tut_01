@@ -9,6 +9,8 @@
 #------------------------------------------------------------------------
 .set noreorder
 
+.set arch = r5900
+
 .text
 .globl gs_set_imr
 .globl gs_set_crtc

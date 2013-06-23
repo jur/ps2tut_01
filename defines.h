@@ -20,8 +20,8 @@ typedef unsigned int	uint32;
 //---------------------------------------------------------------------------
 #ifdef PS2_EE
 
-typedef unsigned long	uint64;
-typedef long			int64;
+typedef unsigned long long	uint64;
+typedef long long		int64;
 
 typedef struct int128
 {

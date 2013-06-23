@@ -9,12 +9,12 @@
 #include "gif.h"
 
 // int_mode
-#define NON_INTERLACED	0
+#define NON_INTERLACED		0
 #define INTERLACED		1
 
 // ntsc_pal
 #define NTSC			2
-#define PAL				3
+#define PAL			3
 
 // field_mode
 #define FRAME			1
@@ -29,7 +29,7 @@ typedef struct
 	uint16 psm;
 	uint16 bpp;
 	uint16 magh;
-} vmode_t __attribute__((aligned(16)));
+} vmode_t;
 
 vmode_t vmodes[] = {
 	 {PAL, 256, 256, 0, 32, 10}	// PAL_256_512_32
@@ -42,10 +42,10 @@ vmode_t vmodes[] = {
 static vmode_t *cur_mode;
 
 //---------------------------------------------------------------------------
-static uint16	g2_max_x=0;		// current resolution max coordinates
+static uint16	g2_max_x=0;	// current resolution max coordinates
 static uint16	g2_max_y=0;
 
-static uint8	g2_col_r=0;		// current draw color
+static uint8	g2_col_r=0;	// current draw color
 static uint8	g2_col_g=0;
 static uint8	g2_col_b=0;
 
@@ -64,7 +64,7 @@ DECLARE_GS_PACKET(gs_dma_buf,50);
 //---------------------------------------------------------------------------
 int g2_init(g2_video_mode mode)
 {
-vmode_t *v;
+	vmode_t *v;
 
 	v = &(vmodes[mode]);
 	cur_mode = v;
@@ -86,10 +86,9 @@ vmode_t *v;
 
 	// - Can someone please tell me what the sync.p 
 	// instruction does. Synchronizes something :-)
-	__asm__("
-		sync.p
-		nop
-	");
+	__asm__("sync.p\n"
+		"nop\n":::"memory"
+	);
 
 	// - Sets up the GS IMR register (i guess).
 	// - The IMR register is used to mask and unmask certain interrupts,
@@ -100,47 +99,53 @@ vmode_t *v;
 
 	// - Use syscall 0x02 to setup some video mode stuff.
 	// - Pretty self explanatory I think.
-	// - Does anyone have code to do this without using the syscall? It looks
-	//   like it should only set the SMODE2 register, but if I remove this syscall
-	//   and set the SMODE2 register myself, it donesn't work. What else does 
-	//   syscall 0x02 do?
+	// - Does anyone have code to do this without using the syscall? It
+	//   looks like it should only set the SMODE2 register, but if I remove
+	//   this syscall and set the SMODE2 register myself, it donesn't work.
+	//   What else does syscall 0x02 do?
 	gs_set_crtc(NON_INTERLACED, v->ntsc_pal, FRAME);
 
-	// - I havn't attempted to understand what the Alpha parameters can do. They
-	//   have been blindly copied from the 3stars demo (although they don't seem 
-	//   do have any impact in this simple 2D code.
+	// - I havn't attempted to understand what the Alpha parameters can do.
+	//   They have been blindly copied from the 3stars demo (although they
+	//   don't seem do have any impact in this simple 2D code.
 	GS_SET_PMODE(
-		0,		// ReadCircuit1 OFF 
-		1,		// ReadCircuit2 ON
-		1,		// Use ALP register for Alpha Blending
-		1,		// Alpha Value of ReadCircuit2 for output selection
-		0,		// Blend Alpha with the output of ReadCircuit2
+		0,	// ReadCircuit1 OFF 
+		1,	// ReadCircuit2 ON
+		1,	// Use ALP register for Alpha Blending
+		1,	// Alpha Value of ReadCircuit2 for output selection
+		0,	// Blend Alpha with the output of ReadCircuit2
 		0xFF	// Alpha Value = 1.0
 	);
 /*
 	// - Non needed if we use gs_set_crt()
 	GS_SET_SMODE2(
-		0,		// Non-Interlaced mode
-		1,		// FRAME mode (read every line)
-		0		// VESA DPMS Mode = ON		??? please explain ???
+		0,	// Non-Interlaced mode
+		1,	// FRAME mode (read every line)
+		0	// VESA DPMS Mode = ON		??? please explain ???
 	);		
 */
 	GS_SET_DISPFB2(
-		0,				// Frame Buffer base pointer = 0 (Address/2048)
+		0,		// Frame Buffer base pointer = 0 (Address/2048)
 		v->width/64,	// Buffer Width (Address/64)
-		v->psm,			// Pixel Storage Format
-		0,				// Upper Left X in Buffer = 0
-		0				// Upper Left Y in Buffer = 0
+		v->psm,		// Pixel Storage Format
+		0,		// Upper Left X in Buffer = 0
+		0		// Upper Left Y in Buffer = 0
 	);
 
 	// Why doesn't (0, 0) equal the very top-left of the TV?
 	GS_SET_DISPLAY2(
-		656,		// X position in the display area (in VCK units)
-		36,			// Y position in the display area (in Raster units)
-		v->magh-1,	// Horizontal Magnification - 1
-		0,						// Vertical Magnification = 1x
-		v->width*v->magh-1,		// Display area width  - 1 (in VCK units) (Width*HMag-1)
-		v->height-1				// Display area height - 1 (in pixels)	  (Height-1)
+		// X position in the display area (in VCK units)
+		656,
+		// Y position in the display area (in Raster units)
+		36,
+		// Horizontal Magnification - 1
+		v->magh-1,
+		// Vertical Magnification = 1x
+		0,
+		// Display area width  - 1 (in VCK units) (Width*HMag-1)
+		v->width*v->magh-1,
+		// Display area height - 1 (in pixels)    (Height-1)
+		v->height-1
 	);
 
 	GS_SET_BGCOLOR(
@@ -156,9 +161,9 @@ vmode_t *v;
 
 	GIF_DATA_AD(gs_dma_buf, frame_1,
 		GS_FRAME(
-			0,					// FrameBuffer base pointer = 0 (Address/2048)
-			v->width/64,		// Frame buffer width (Pixels/64)
-			v->psm,				// Pixel Storage Format
+			0,	// FrameBuffer base pointer = 0 (Address/2048)
+			v->width/64,	// Frame buffer width (Pixels/64)
+			v->psm,		// Pixel Storage Format
 			0));
 
 	// No displacement between Primitive and Window coordinate systems.

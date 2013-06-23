@@ -2,44 +2,51 @@
 .set noat
 .set noreorder
 
+.set arch = r5900
+
 .global ENTRYPOINT
+.global __start
 .global _start
 .global _exit
 .global __main
 
+#define STACKSIZE 0x80000
+#define HEAPSIZE 0x100000
+
 //-----------------------------------------------
-.ent	_start
-.text				# 0x00200000
+.ent	__start
+.text
 nop
 nop
 ENTRYPOINT:
+__start:
 _start:
 
 // clear .bss
 zerobss:
-	lui	$2, %hi(_fbss)
+	lui	$2, %hi(__bss_start)
 	lui	$3, %hi(_end)
-	addiu	$2, $2, %lo(_fbss)
+	addiu	$2, $2, %lo(__bss_start)
 	addiu	$3, $3, %lo(_end)
 1:
-	nop
-	nop
-	sq	$0, ($2)
+	sw	$0, ($2)
+	sw	$0, 4($2)
+	sw	$0, 8($2)
+	sw	$0, 12($2)
 	sltu	$1, $2, $3
-	nop
 	nop
 	bne	$1, $0, 1b
 	addiu	$2, $2, 16
 
 // initialize main thread
 	lui	$4, %hi(_gp)
-	lui	$5, %hi(_stack)
-	lui	$6, %hi(_stack_size)
+	lui	$5, %hi(_end)
+	lui	$6, %hi(STACKSIZE)
 	lui	$7, %hi(_args)
 	lui	$8, %hi(_root)
 	addiu	$4, $4, %lo(_gp)
-	addiu	$5, $5, %lo(_stack)
-	addiu	$6, $6, %lo(_stack_size)
+	addiu	$5, $5, %lo(_end)
+	addiu	$6, $6, %lo(STACKSIZE)
 	addiu	$7, $7, %lo(_args)
 	addiu	$8, $8, %lo(_root)
 	move	$28, $4
@@ -48,16 +55,20 @@ zerobss:
 	move	$29, $2
 
 // initialize heap area
-	lui	$4, %hi(_end)
-	lui	$5, %hi(_heap_size)
-	addiu	$4, $4, %lo(_end)
-	addiu	$5, $5, %lo(_heap_size)
+	lui	$4, %hi(_end + STACKSIZE)
+	lui	$5, %hi(HEAPSIZE)
+	addiu	$4, $4, %lo(_end + STACKSIZE)
+	addiu	$5, $5, %lo(HEAPSIZE)
 	addiu	$3, $0, 61
 	syscall
 
+	lui	$28, %hi(_gp)
+	addiu	$28, %lo(_gp)
+
 // flush data cache
 	move	$4, $0
-	jal	ps2_flush_cache
+	la	$25, ps2_flush_cache
+	jalr	$25
 	nop
 
 // call main program
@@ -65,12 +76,13 @@ zerobss:
 	lui	$2, %hi(_args)
 	addiu	$2, $2, %lo(_args)
 	lw	$4, ($2)
-	jal	main
+	la	$25, main
+	jalr	$25
 	addiu	$5, $2, 4
 
 	j	Exit
 	move	$4, $2
-.end	_start
+.end	__start
 
 //-----------------------------------------------
 .align	3
@@ -106,4 +118,5 @@ Exit:
 //-----------------------------------------------
 .bss
 .align	6
-_args: .space	256 + 16*4 + 1*4
+_args:
+	.space	256 + 16*4 + 1*4

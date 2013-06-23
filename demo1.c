@@ -12,9 +12,9 @@ static uint32 seed=0x12345678;
 
 float crap_rand(void)
 {
-// small delay...
-uint32 i;
-for(i=0; i<0xFFF; i++) {}
+	// small delay...
+	volatile uint32 i;
+	for(i=0; i<0xFFF; i++) {}
 
 	seed = (seed*RAND_A+RAND_C) % RAND_M;
 	return((float)seed / (float)RAND_M);
@@ -23,7 +23,7 @@ for(i=0; i<0xFFF; i++) {}
 //---------------------------------------------------------------------------
 void pixel_demo(void)
 {
-uint32 i;
+	uint32 i;
 
 	g2_set_fill_color(0, 0, 0);
 	g2_fill_rect(0, 0, g2_get_max_x(), g2_get_max_y());
@@ -44,7 +44,7 @@ uint32 i;
 //---------------------------------------------------------------------------
 void line_demo(void)
 {
-uint32 i;
+	uint32 i;
 
 	g2_set_fill_color(0, 0, 0);
 	g2_fill_rect(0, 0, g2_get_max_x(), g2_get_max_y());
@@ -67,7 +67,7 @@ uint32 i;
 //---------------------------------------------------------------------------
 void rect_demo(void)
 {
-uint32 i;
+	uint32 i;
 
 	g2_set_fill_color(0, 0, 0);
 	g2_fill_rect(0, 0, g2_get_max_x(), g2_get_max_y());
@@ -90,7 +90,7 @@ uint32 i;
 //---------------------------------------------------------------------------
 void fill_demo(void)
 {
-uint32 i;
+	uint32 i;
 	g2_set_fill_color(0, 0, 0);
 	g2_fill_rect(0, 0, g2_get_max_x(), g2_get_max_y());
 

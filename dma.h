@@ -25,48 +25,48 @@ extern void dma_reset(void);
 //---------------------------------------------------------------------------
 // CHCR Register - Channel Control Register
 //---------------------------------------------------------------------------
-#define GIF_CHCR		((volatile uint32 *)(gif_chcr))
+#define GIF_CHCR		(gif_chcr)
 
 #define SET_CHCR(WHICH,DIR,MOD,ASP,TTE,TIE,STR,TAG) \
-	*WHICH = \
+	write_reg32(WHICH, \
 	((uint32)(DIR)	<< 0)		| \
 	((uint32)(MOD)	<< 2)		| \
 	((uint32)(ASP)	<< 4)		| \
 	((uint32)(TTE)	<< 6)		| \
 	((uint32)(TIE)	<< 7)		| \
 	((uint32)(STR)	<< 8)		| \
-	((uint32)(TAG)	<< 16)
+	((uint32)(TAG)	<< 16))
 
 #define DMA_WAIT(WHICH) \
-	while((*WHICH) & (1<<8))
+	while(read_reg32(WHICH) & (1<<8))
 
 //---------------------------------------------------------------------------
 // MADR Register - Transfer Address Register
 //---------------------------------------------------------------------------
-#define GIF_MADR		((volatile uint32 *)(gif_madr))
+#define GIF_MADR		(gif_madr)
 
 #define SET_MADR(WHICH,ADDR,SPR) \
-	*WHICH = \
+	write_reg32(WHICH, \
 	((uint32)(ADDR)	<< 0)		| \
-	((uint32)(SPR)	<< 31)
+	((uint32)(SPR)	<< 31))
 
 //---------------------------------------------------------------------------
 // TADR Register - Tag Address Register
 //---------------------------------------------------------------------------
-#define GIF_TADR		((volatile uint32 *)(gif_tadr))
+#define GIF_TADR		(gif_tadr)
 
 #define SET_TADR(WHICH,ADDR,SPR) \
-	*WHICH = \
+	write_reg32(WHICH, \
 	((uint32)(ADDR)	<< 0)		| \
-	((uint32)(SPR)	<< 31)
+	((uint32)(SPR)	<< 31))
 
 //---------------------------------------------------------------------------
 // QWC Register - Transfer Data Size Register
 //---------------------------------------------------------------------------
-#define GIF_QWC		((volatile uint32 *)(gif_qwc))
+#define GIF_QWC		(gif_qwc)
 
 #define SET_QWC(WHICH,SIZE) \
-	*WHICH = (uint32)(SIZE)
+	write_reg32(WHICH, (uint32)(SIZE))
 
 #endif // DMA_H
 
